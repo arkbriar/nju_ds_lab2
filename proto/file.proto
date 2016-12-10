@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net/file";
+option java_outer_classname = "FileProto";
+
+package dfs.file;
+
+import "errors.proto";
+
+message FileStore {
+  string name = 1;
+  int64 total_space = 2;
+  int64 unallocated_space = 3;
+  int64 usable_space = 4;
+  FileStoreURI uri = 5;
+  FileStoreExtra extra = 6;
+}
+
+message FileStoreURI {
+  string host = 1;
+  int32 port = 2;
+}
+
+message FileStoreExtra {
+}
+
+message Path {
+  string path = 1;
+}
+
+message File {
+  FileStoreURI file_store_uri = 100;
+  string name = 1;
+  Path path = 2;
+  int64 size = 3;
+  bytes checksum = 4;
+}
+
+message FileBlock {
+  bytes block = 1;
+}
+
+service FileSystem {
+  rpc CheckExistence(Path) returns (CheckExistenceResponse);
+  rpc Copy(CopyRequest) returns (CopyResponse);
+  rpc CreateDirectory(Path) returns (CreateDirectoryResponse);
+  rpc Delete(Path) returns (DeleteResponse);
+  rpc DeleteIfExsits(Path) returns (DeleteResponse);
+  rpc Move(MoveRequest) returns (MoveResponse);
+  rpc GetFileStore(FileStoreURI) returns (FileStore);
+
+  rpc CreateFileMeta(Path) returns (CreateFileMetaResponse);
+  rpc GetFileMeta(Path) returns (GetFileMetaResponse);
+  rpc PutFile(stream ControlledPacket) returns (PutFileResponse);
+  rpc GetFile(GetFileRequest) returns (stream ControlledPacket);
+}
+
+message CheckExistenceResponse {
+  bool exists = 1;
+}
+
+message CopyRequest {
+  Path src = 1;
+  Path dest = 2;
+}
+
+message CopyResponse {
+  dfs.errors.FileSystemError error = 100;
+}
+
+message MoveRequest {
+  Path src = 1;
+  Path dest = 2;
+}
+
+message MoveResponse {
+  dfs.errors.FileSystemError error = 100;
+}
+
+message DeleteResponse {
+  dfs.errors.FileSystemError error = 100;
+}
+
+message CreateDirectoryResponse {
+  dfs.errors.FileSystemError error = 100;
+}
+
+message CreateFileMetaResponse {
+  dfs.errors.FileSystemError error = 100;
+  File file = 1;
+}
+
+message GetFileMetaResponse {
+  dfs.errors.FileSystemError error = 100;
+  File file = 1;
+}
+
+enum TransferCommand {
+  INIT = 0;
+  PAUSE = 1;
+  CLOSE = 2;
+}
+
+message PutFileResponse {
+  TransferCommand command = 1;
+}
+
+message GetFileRequest {
+  TransferCommand command = 1;
+}
+
+message ControlledPacket {
+  oneof data {
+    FileBlock file_block = 1;
+    bytes checksum = 2;
+    int64 progress = 3;
+    File file_to_chap = 4;
+  }
+}
