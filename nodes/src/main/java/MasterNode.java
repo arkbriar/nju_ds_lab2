@@ -9,13 +9,13 @@ public class MasterNode {
     private static final Logger logger = Logger.getLogger(MasterNode.class.getName());
 
     public static void main(String... args) throws IOException, InterruptedException {
+        int port = 8088;
         if (args.length == 0) {
-            logger.log(Level.WARNING, "First param should be a port number.");
-            System.exit(1);
+            logger.log(Level.WARNING, "No port specified, using default port 8088.");
+        } else {
+            port = Integer.valueOf(args[0]);
         }
-        int port = Integer.valueOf(args[0]);
         MasterNodeServer server = new MasterNodeServer(port);
-        server.start();
-        server.blockUntilShutdown();
+        server.startAndBlock();
     }
 }

@@ -15,7 +15,6 @@ public class DataNode {
         }
         int port = Integer.valueOf(args[0]);
         DataNodeServer server = new DataNodeServer(port);
-        server.start();
-        server.blockUntilShutdown();
+        server.startAndBlock();
     }
 }

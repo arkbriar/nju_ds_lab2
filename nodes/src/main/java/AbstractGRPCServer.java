@@ -6,12 +6,13 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-import heartbeat.HeartBeatService;
 
 /**
  * Created by Shunjie Ding on 12/12/2016.
  */
 public abstract class AbstractGRPCServer {
+    private final Logger logger;
+
     private Server server;
     private int port;
     /**
@@ -19,6 +20,10 @@ public abstract class AbstractGRPCServer {
      * This should be initialized before any {@code buildServer} is called.
      */
     private List<BindableService> serviceList = new LinkedList<>();
+
+    protected AbstractGRPCServer(Logger logger) {
+        this.logger = logger;
+    }
 
     protected void buildServer(int port) {
         buildServer(ServerBuilder.forPort(port), port);
@@ -36,10 +41,20 @@ public abstract class AbstractGRPCServer {
         return serviceList;
     }
 
+    protected AbstractGRPCServer addService(BindableService service) {
+        serviceList.add(service);
+        return this;
+    }
+
     /** Start serving requests. */
     public void start() throws IOException {
         server.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> { AbstractGRPCServer.this.stop(); }));
+        logger.info("Server started, listening on port " + port);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.err.println("*** shutting down gRPC server since JVM is shutting down");
+            AbstractGRPCServer.this.stop();
+            System.err.println("*** server shut down");
+        }));
     }
 
     /** Stop serving requests and shutdown resources. */
@@ -56,5 +71,10 @@ public abstract class AbstractGRPCServer {
         if (server != null) {
             server.awaitTermination();
         }
+    }
+
+    public void startAndBlock() throws IOException, InterruptedException {
+        start();
+        blockUntilShutdown();
     }
 }

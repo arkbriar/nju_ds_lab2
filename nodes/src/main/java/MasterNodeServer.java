@@ -1,8 +1,5 @@
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-
-import java.io.IOException;
 import java.util.logging.Logger;
+import file.FileSystemMetaService;
 import heartbeat.HeartBeatService;
 
 /**
@@ -12,7 +9,8 @@ public class MasterNodeServer extends AbstractGRPCServer {
     private static final Logger logger = Logger.getLogger(MasterNodeServer.class.getName());
 
     public MasterNodeServer(int port) {
-        getServiceList().add(new HeartBeatService());
+        super(logger);
+        super.addService(new HeartBeatService()).addService(new FileSystemMetaService());
         buildServer(port);
     }
 }
