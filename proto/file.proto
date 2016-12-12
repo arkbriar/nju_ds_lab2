@@ -49,9 +49,11 @@ service FileSystem {
   rpc DeleteIfExsits(Path) returns (DeleteResponse);
   rpc Move(MoveRequest) returns (MoveResponse);
   rpc GetFileStore(FileStoreURI) returns (FileStore);
-
   rpc CreateFileMeta(Path) returns (CreateFileMetaResponse);
   rpc GetFileMeta(Path) returns (GetFileMetaResponse);
+}
+
+service FileDevice {
   rpc PutFile(stream ControlledPacket) returns (PutFileResponse);
   rpc GetFile(GetFileRequest) returns (stream ControlledPacket);
 }
@@ -88,11 +90,13 @@ message CreateDirectoryResponse {
 
 message CreateFileMetaResponse {
   dfs.errors.FileSystemError error = 100;
+  bytes token = 99;
   File file = 1;
 }
 
 message GetFileMetaResponse {
   dfs.errors.FileSystemError error = 100;
+  bytes token = 99;
   File file = 1;
 }
 
