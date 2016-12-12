@@ -26,7 +26,7 @@ public class MasterNode {
         } else {
             logger.log(Level.WARNING, "No port specified, using default port 8088.");
         }
-        MasterNodeServer server = new MasterNodeServer(port);
+        MasterNodeServer server = new MasterNodeServer(port, null);
         server.startAndBlock();
     }
 }

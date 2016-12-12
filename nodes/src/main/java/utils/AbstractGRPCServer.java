@@ -1,3 +1,5 @@
+package utils;
+
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -29,7 +31,7 @@ public abstract class AbstractGRPCServer {
         buildServer(ServerBuilder.forPort(port), port);
     }
 
-    protected void buildServer(ServerBuilder<?> serverBuilder, int port) {
+    void buildServer(ServerBuilder<?> serverBuilder, int port) {
         this.port = port;
         for (BindableService service : serviceList) {
             serverBuilder = serverBuilder.addService(service);

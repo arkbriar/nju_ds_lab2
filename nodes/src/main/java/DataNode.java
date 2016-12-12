@@ -26,7 +26,7 @@ public class DataNode {
         } else {
             logger.log(Level.WARNING, "No port specified, using default port 8088.");
         }
-        DataNodeServer server = new DataNodeServer(port);
+        DataNodeServer server = new DataNodeServer(port, null);
         server.startAndBlock();
     }
 }

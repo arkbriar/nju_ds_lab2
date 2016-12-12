@@ -14,11 +14,18 @@ import net.file.GetFileMetaResponse;
 import net.file.MoveRequest;
 import net.file.MoveResponse;
 import net.file.Path;
+import org.redisson.api.RedissonClient;
 
 /**
  * Created by Shunjie Ding on 12/12/2016.
  */
 public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
+    private RedissonClient redissonClient;
+
+    public FileSystemMetaService(RedissonClient redissonClient) {
+        this.redissonClient = redissonClient;
+    }
+
     @Override
     public void checkExistence(
         Path request, StreamObserver<CheckExistenceResponse> responseObserver) {
