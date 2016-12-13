@@ -4,7 +4,7 @@ option java_multiple_files = true;
 option java_package = "net.file";
 option java_outer_classname = "FileProto";
 
-package dfs.file;
+package file;
 
 import "errors.proto";
 
@@ -64,7 +64,7 @@ message Token {
 }
 
 message ListResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
   repeated string name = 1;
 }
 
@@ -74,7 +74,7 @@ message CopyRequest {
 }
 
 message CopyResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
 }
 
 message MoveRequest {
@@ -83,24 +83,24 @@ message MoveRequest {
 }
 
 message MoveResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
 }
 
 message DeleteResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
 }
 
 message CreateDirectoryResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
 }
 
 message CreateFileMetaResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
   File file = 1;
 }
 
 message GetFileMetaResponse {
-  dfs.errors.FileSystemError error = 100;
+  FileSystemError error = 100;
   File file = 1;
 }
 
