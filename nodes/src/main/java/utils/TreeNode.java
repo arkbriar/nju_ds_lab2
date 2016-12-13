@@ -49,6 +49,12 @@ public class TreeNode<T> {
         return childrenSet;
     }
 
+    public TreeNode<T> addChild(T value) {
+        TreeNode<T> newNode = new TreeNode<T>(this, value);
+        childrenSet.add(newNode);
+        return newNode;
+    }
+
     public void setParent(TreeNode parent) {
         this.parent = parent;
     }

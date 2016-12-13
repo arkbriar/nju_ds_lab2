@@ -63,6 +63,7 @@ message Token {
 }
 
 message CheckExistenceResponse {
+  dfs.errors.FileSystemError error = 100;
   bool exists = 1;
 }
 

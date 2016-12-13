@@ -3,6 +3,7 @@ package file;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.regex.Pattern;
 import file.exceptions.InvalidPathException;
 
 /**
@@ -13,12 +14,25 @@ public class Path {
     private String[] subPaths;
     private String fileName = null;
 
-    public Path(String path) throws InvalidPathException {
-        if (!path.startsWith("/")) {
-            throw new InvalidPathException("Invalid path " + path);
+    private static boolean validate(String path) {
+        Pattern pattern = Pattern.compile("^(/[^/]+)*/([^/]+)$");
+        return pattern.matcher(path).matches();
+    }
+
+    private static String trimRight(String s, String suffix) {
+        if (s.endsWith(suffix)) {
+            return s.substring(0, s.length() - suffix.length());
+        } else {
+            return s;
         }
-        this.path = path;
-        this.subPaths = path.split("/");
+    }
+
+    public Path(String path) throws InvalidPathException {
+        this.path = trimRight(path, "/");
+        if (!validate(this.path)) {
+            throw new InvalidPathException(path + " is not a valid path");
+        }
+        this.subPaths = this.path.split("/");
         assert this.subPaths.length > 0;
         this.subPaths = Arrays.copyOfRange(this.subPaths, 1, this.subPaths.length);
         if (!isRoot()) {

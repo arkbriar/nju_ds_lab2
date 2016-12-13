@@ -1,8 +1,5 @@
 package file;
 
-import java.util.Date;
-import java.util.UUID;
-
 /**
  * Created by Shunjie Ding on 13/12/2016.
  */
@@ -15,6 +12,10 @@ public abstract class FileMeta {
      * Modification time of this file, measured in milliseconds in format of UTC time.
      */
     protected long modificationTime;
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getName() {
         return name;
