@@ -1,5 +1,9 @@
 package file;
 
+import com.google.protobuf.ByteString;
+
+import java.util.UUID;
+
 /**
  * Created by Shunjie Ding on 13/12/2016.
  */
@@ -9,9 +13,17 @@ public class File extends FileMeta {
      */
     private long size;
 
-    public File(String name, long size) {
+    private ByteString checksum;
+
+    private UUID uuid;
+
+    private int storeId = -1;
+
+    public File(String name, long size, ByteString checksum) {
         this.name = name;
         this.size = size;
+        this.checksum = checksum;
+        this.uuid = UUID.randomUUID();
     }
 
     @Override
@@ -28,5 +40,29 @@ public class File extends FileMeta {
             throw new RuntimeException(fileMeta.getName() + " is not a file");
         }
         return (File) fileMeta;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(int storeId) {
+        this.storeId = storeId;
+    }
+
+    public ByteString getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(ByteString checksum) {
+        this.checksum = checksum;
     }
 }

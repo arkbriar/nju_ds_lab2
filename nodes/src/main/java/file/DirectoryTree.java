@@ -3,6 +3,7 @@ package file;
 import java.util.Enumeration;
 import java.util.Set;
 import file.exceptions.FileAlreadyExistsException;
+import file.exceptions.FileSystemException;
 import file.exceptions.PathNotFoundException;
 import utils.TreeNode;
 
@@ -38,7 +39,10 @@ public class DirectoryTree {
         return null;
     }
 
-    private TreeNode<FileMeta> getNode(Path path) {
+    TreeNode<FileMeta> getNode(Path path) {
+        if (path == null) {
+            return null;
+        }
         TreeNode<FileMeta> current = root;
         Enumeration<String> subPaths = path.subPaths();
         while (subPaths.hasMoreElements()) {
@@ -64,7 +68,7 @@ public class DirectoryTree {
         return node.getValue();
     }
 
-    public void createDirectory(Path path)
+    public FileMeta createDirectory(Path path)
         throws PathNotFoundException, FileAlreadyExistsException {
         TreeNode<FileMeta> node = getNode(path.getParent());
         if (node == null) {
@@ -73,7 +77,7 @@ public class DirectoryTree {
         if (getNextNode(node, path.getFileName()) != null) {
             throw new FileAlreadyExistsException(path + " is already exists");
         }
-        node.addChild(new Directory(path.getFileName()));
+        return node.addChild(new Directory(path.getFileName())).getValue();
     }
 
     private TreeNode<FileMeta> createIntermediateDirectories(Path path) {
@@ -98,21 +102,21 @@ public class DirectoryTree {
      * @throws PathNotFoundException Thrown when {@code force} is false and intermediate path is
      * not found.
      */
-    public void createDirectory(Path path, boolean force)
+    public FileMeta createDirectory(Path path, boolean force)
         throws FileAlreadyExistsException, PathNotFoundException {
         if (force) {
             TreeNode<FileMeta> node = createIntermediateDirectories(path);
             if (getNextNode(node, path.getFileName()) != null) {
                 throw new FileAlreadyExistsException(path + " is already exists");
             } else {
-                node.addChild(new Directory(path.getFileName()));
+                return node.addChild(new Directory(path.getFileName())).getValue();
             }
         } else {
-            createDirectory(path);
+            return createDirectory(path);
         }
     }
 
-    public void createFile(Path path, File file)
+    public FileMeta createFile(Path path, File file)
         throws PathNotFoundException, FileAlreadyExistsException {
         TreeNode<FileMeta> node = getNode(path.getParent());
         if (node == null) {
@@ -122,10 +126,10 @@ public class DirectoryTree {
             throw new FileAlreadyExistsException(path + " is already exists");
         }
         file.setName(path.getFileName());
-        node.addChild(file);
+        return node.addChild(file).getValue();
     }
 
-    public void createFile(Path path, File file, boolean force)
+    public FileMeta createFile(Path path, File file, boolean force)
         throws FileAlreadyExistsException, PathNotFoundException {
         if (force) {
             TreeNode<FileMeta> node = createIntermediateDirectories(path);
@@ -133,10 +137,48 @@ public class DirectoryTree {
                 throw new FileAlreadyExistsException(path + " is already exists");
             } else {
                 file.setName(path.getFileName());
-                node.addChild(file);
+                return node.addChild(file).getValue();
             }
         } else {
-            createFile(path, file);
+            return createFile(path, file);
         }
+    }
+
+    public boolean delete(Path path, boolean recursive) throws FileSystemException {
+        TreeNode<FileMeta> node = getNode(path);
+        if (node == null) {
+            throw new PathNotFoundException(path + " is not found");
+        }
+        if (recursive || !node.getValue().isDir()) {
+            return node.getParent().removeChild(node);
+        } else {
+            throw new FileSystemException(path + " is a directory");
+        }
+    }
+
+    public boolean deleteIfExists(Path path, boolean recursive) throws FileSystemException {
+        TreeNode<FileMeta> node = getNode(path);
+        if (node == null) {
+            return false;
+        }
+        if (recursive || !node.getValue().isDir()) {
+            return node.getParent().removeChild(node);
+        } else {
+            throw new FileSystemException(path + " is a directory");
+        }
+    }
+
+    public void move(Path src, Path dest) throws PathNotFoundException {
+        TreeNode<FileMeta> srcNode = getNode(src);
+        TreeNode<FileMeta> destNode = getNode(dest.getParent());
+        if (srcNode == null) {
+            throw new PathNotFoundException(src + " is not found");
+        }
+        if (destNode == null) {
+            throw new PathNotFoundException(dest + " is not found");
+        }
+        srcNode.getParent().removeChild(srcNode);
+        srcNode.getValue().setName(dest.getFileName());
+        destNode.addChild(srcNode);
     }
 }

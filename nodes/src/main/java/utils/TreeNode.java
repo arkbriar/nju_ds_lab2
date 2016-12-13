@@ -49,10 +49,28 @@ public class TreeNode<T> {
         return childrenSet;
     }
 
+    public boolean removeChild(T value) {
+        return childrenSet.remove(new TreeNode<T>(value));
+    }
+
+    public boolean removeChild(TreeNode<T> node) {
+        return childrenSet.remove(node);
+    }
+
+    public void removeAllChild() {
+        childrenSet.clear();
+    }
+
     public TreeNode<T> addChild(T value) {
         TreeNode<T> newNode = new TreeNode<T>(this, value);
         childrenSet.add(newNode);
         return newNode;
+    }
+
+    public TreeNode<T> addChild(TreeNode<T> child) {
+        child.setParent(this);
+        childrenSet.add(child);
+        return child;
     }
 
     public void setParent(TreeNode parent) {
@@ -61,5 +79,14 @@ public class TreeNode<T> {
 
     public T getValue() {
         return value;
+    }
+
+    public void setValue(T value) {
+        this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.getClass() == obj.getClass() && this.value.equals(((TreeNode<T>) obj).value);
     }
 }
