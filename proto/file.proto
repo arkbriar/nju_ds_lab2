@@ -13,11 +13,11 @@ message FileStore {
   int64 total_space = 2;
   int64 unallocated_space = 3;
   int64 usable_space = 4;
-  FileStoreURI uri = 5;
+  FileStoreURL url = 5;
   FileStoreExtra extra = 6;
 }
 
-message FileStoreURI {
+message FileStoreURL {
   string host = 1;
   int32 port = 2;
 }
@@ -30,7 +30,7 @@ message Path {
 }
 
 message File {
-  FileStoreURI file_store_uri = 100;
+  FileStoreURL file_store_url = 100;
   string name = 1;
   Path path = 2;
   int64 size = 3;
@@ -48,7 +48,7 @@ service FileSystem {
   rpc Delete(Path) returns (DeleteResponse);
   rpc DeleteIfExists(Path) returns (DeleteResponse);
   rpc Move(MoveRequest) returns (MoveResponse);
-  rpc GetFileStore(FileStoreURI) returns (FileStore);
+  rpc GetFileStore(FileStoreURL) returns (FileStore);
   rpc CreateFileMeta(Path) returns (CreateFileMetaResponse);
   rpc GetFileMeta(Path) returns (GetFileMetaResponse);
 }
