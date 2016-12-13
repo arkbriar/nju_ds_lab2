@@ -15,11 +15,13 @@ class DataNodeServer extends AbstractGRPCServer {
 
     private RedissonClient redissonClient;
 
-    DataNodeServer(int port, Config config) {
+    private String path;
+
+    DataNodeServer(int port, String path, Config config) {
         super(logger);
         redissonClient = Redisson.create(config);
         super.addService(new HeartBeatService())
-            .addService(new FileSystemDataService(redissonClient));
+            .addService(new FileSystemDataService(redissonClient, path));
         buildServer(port);
     }
 }

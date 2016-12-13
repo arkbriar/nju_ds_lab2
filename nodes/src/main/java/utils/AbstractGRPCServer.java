@@ -43,7 +43,7 @@ public abstract class AbstractGRPCServer {
         return serviceList;
     }
 
-    protected AbstractGRPCServer addService(BindableService service) {
+    public AbstractGRPCServer addService(BindableService service) {
         serviceList.add(service);
         return this;
     }

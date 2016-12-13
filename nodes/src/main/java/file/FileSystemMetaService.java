@@ -367,12 +367,14 @@ public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
             } else {
                 String token = DigestUtils.md5Hex(request.getPath());
                 RReadWriteLock rwLock = redissonClient.getReadWriteLock(token);
-                rwLock.writeLock();
+                rwLock.writeLock().forceUnlockAsync().await(1000 * 3600);
                 responseObserver.onNext(
                     Token.newBuilder().setToken(ByteString.copyFromUtf8(token)).build());
             }
         } catch (InvalidPathException e) {
             responseObserver.onNext(Token.getDefaultInstance());
+        } catch (InterruptedException e) {
+            // do nothing
         }
         responseObserver.onCompleted();
     }

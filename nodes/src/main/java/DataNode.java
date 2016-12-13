@@ -5,6 +5,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,15 +19,29 @@ public class DataNode {
         throws IOException, InterruptedException, ParseException {
         Options options = new Options();
         options.addOption("p", "port", true, "Port of the service");
+        options.addOption("n", "name", true, "Name of the server");
+        options.addOption("d", "dir", true, "Directory of the file store");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
         int port = 10088;
+        String name = UUID.randomUUID().toString();
         if (cmd.hasOption("t")) {
             port = Integer.valueOf(cmd.getOptionValue("t"));
         } else {
-            logger.log(Level.WARNING, "No port specified, using default port 8088.");
+            logger.info("No port specified, using default port 8088.");
         }
-        DataNodeServer server = new DataNodeServer(port, null);
+        if (cmd.hasOption("n")) {
+            name = cmd.getOptionValue("n");
+        } else {
+            logger.info("Using random server name " + name);
+        }
+        String directoryPath = "/tmp/" + name;
+        if (cmd.hasOption("d")) {
+            directoryPath = cmd.getOptionValue("d");
+        } else {
+            logger.info("Files are stored at " + directoryPath);
+        }
+        DataNodeServer server = new DataNodeServer(port, directoryPath, null);
         server.startAndBlock();
     }
 }
