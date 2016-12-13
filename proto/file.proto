@@ -55,8 +55,8 @@ service FileSystem {
 }
 
 service FileStoreDevice {
-  rpc PutFile(stream ControlledPacket) returns (PutFileResponse);
-  rpc GetFile(GetFileRequest) returns (stream ControlledPacket);
+  rpc PutFile(stream ControlledPacket) returns (stream PutFileResponse);
+  rpc GetFile(stream GetFileRequest) returns (stream ControlledPacket);
 }
 
 message Token {
@@ -120,9 +120,9 @@ message GetFileRequest {
 
 message ControlledPacket {
   oneof data {
+    File file_to_chap = 99;
     FileBlock file_block = 1;
     bytes checksum = 2;
-    int64 progress = 3;
-    File file_to_chap = 4;
+    bool end = 3;
   }
 }
