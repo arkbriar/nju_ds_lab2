@@ -39,7 +39,7 @@ public class DirectoryTree {
         return null;
     }
 
-    TreeNode<FileMeta> getNode(Path path) {
+    public TreeNode<FileMeta> getNode(Path path) {
         if (path == null) {
             return null;
         }

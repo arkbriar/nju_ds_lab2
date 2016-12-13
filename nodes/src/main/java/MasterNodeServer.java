@@ -3,7 +3,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
 import java.util.logging.Logger;
-import file.FileSystemMetaService;
+import services.FileSystemMetaService;
 import heartbeat.HeartBeatService;
 import utils.AbstractGRPCServer;
 

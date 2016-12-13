@@ -1,4 +1,4 @@
-package file;
+package services;
 
 import com.google.protobuf.ByteString;
 
@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import file.File;
 
 /**
  * Created by Shunjie Ding on 12/12/2016.

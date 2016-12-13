@@ -1,4 +1,4 @@
-package file;
+package services;
 
 import com.google.protobuf.ByteString;
 
@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import file.DirectoryTree;
+import file.File;
+import file.FileMeta;
 import file.exceptions.FileAlreadyExistsException;
 import file.exceptions.FileSystemException;
 import file.exceptions.InvalidPathException;
