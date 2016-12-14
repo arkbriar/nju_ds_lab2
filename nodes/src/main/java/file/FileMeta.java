@@ -30,4 +30,20 @@ public abstract class FileMeta {
     }
 
     public abstract boolean isDir();
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof FileMeta)) {
+            return false;
+        }
+        final FileMeta other = (FileMeta) obj;
+        if (this.name == null) {
+            return other.name == null;
+        } else {
+            return this.name.equals(other.name);
+        }
+    }
 }

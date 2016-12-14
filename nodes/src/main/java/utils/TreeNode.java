@@ -87,6 +87,20 @@ public class TreeNode<T> {
 
     @Override
     public boolean equals(Object obj) {
-        return this.getClass() == obj.getClass() && this.value.equals(((TreeNode<T>) obj).value);
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof TreeNode)) {
+            return false;
+        }
+        final TreeNode other = (TreeNode) obj;
+        if (!value.getClass().isAssignableFrom(other.value.getClass())) {
+            return false;
+        }
+        if (this.value == null) {
+            return other.value == null;
+        } else {
+            return this.value.equals(other.value);
+        }
     }
 }
