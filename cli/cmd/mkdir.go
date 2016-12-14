@@ -34,13 +34,14 @@ var mkdirCmd = &cobra.Command{
 	Short: "Create a directory on remote DFS",
 	Long:  `Create a directory on remote DFS.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		checkArg(args, 1)
 		dfsc := initDfsc()
 		defer dfsc.Close()
 		path := args[0]
 		err := dfsc.Mkdir(path)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(-1)
 		}
 	},
 }

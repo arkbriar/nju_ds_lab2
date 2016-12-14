@@ -34,13 +34,14 @@ var getCmd = &cobra.Command{
 	Short: "Get a file from remote DFS",
 	Long:  `Get a file from remote DFS.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		checkArg(args, 2)
 		dfsc := initDfsc()
 		defer dfsc.Close()
 		remote, local := args[0], args[1]
 		err := dfsc.Get(remote, local)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(-1)
 		}
 	},
 }

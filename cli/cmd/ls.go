@@ -34,12 +34,14 @@ var lsCmd = &cobra.Command{
 	Short: "List files of remote DFS",
 	Long:  `List files of remote DFS.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		checkArg(args, 1)
 		dfsc := initDfsc()
 		defer dfsc.Close()
-		fileList, err := dfsc.List(args[0])
+		path := args[0]
+		fileList, err := dfsc.List(path)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(-1)
 		} else {
 			fmt.Println(strings.Join(fileList, "\t"))
 		}

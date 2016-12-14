@@ -34,13 +34,14 @@ var mvCmd = &cobra.Command{
 	Short: "Move a file to another location on remote DFS",
 	Long:  `Move a file to another on remote DFS.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		checkArg(args, 2)
 		dfsc := initDfsc()
 		defer dfsc.Close()
 		src, dest := args[0], args[1]
 		err := dfsc.Move(src, dest)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(-1)
 		}
 	},
 }

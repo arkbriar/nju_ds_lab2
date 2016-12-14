@@ -34,12 +34,13 @@ var putCmd = &cobra.Command{
 	Short: "Put a local file onto remote DFS",
 	Long:  `Put a local file onto remote DFS.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		checkArg(args, 2)
 		dfsc := initDfsc()
 		defer dfsc.Close()
 		local, remote := args[0], args[1]
 		if err := dfsc.Put(local, remote); err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(-1)
 		}
 	},
 }

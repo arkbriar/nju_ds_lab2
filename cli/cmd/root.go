@@ -86,6 +86,14 @@ func initDfsc() *dfs.DistributedFileSystem {
 	err := dfsc.Open()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(-1)
+	}
+	return dfsc
+}
+
+func checkArg(args []string, rqlen int) {
+	if len(args) < rqlen {
+		fmt.Printf("Require %d arguments, but there's only %d\n", rqlen, len(args))
+		os.Exit(-1)
 	}
 }

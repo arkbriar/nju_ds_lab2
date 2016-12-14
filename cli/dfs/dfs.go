@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"os"
 
-	"net"
+	"strconv"
 
 	"google.golang.org/grpc"
 	"nju.edu.cn/ds/lab2/cli/file"
@@ -68,7 +69,7 @@ func (fs *DistributedFileSystem) List(path string) ([]string, error) {
 		return nil, fmt.Errorf("not connected")
 	}
 	if !utils.ValidatePath(path) {
-		return utils.InvalidPathError(path)
+		return nil, utils.InvalidPathError(path)
 	}
 	resp, err := fs.fsclient.List(context.Background(), &file.Path{
 		Path: path,
@@ -105,7 +106,7 @@ func (fs *DistributedFileSystem) Move(src, dest string) error {
 	if !utils.ValidatePath(dest) {
 		return utils.InvalidPathError(dest)
 	}
-	resp, err := fs.fsclient.Move(context.Background, &file.MoveRequest{
+	resp, err := fs.fsclient.Move(context.Background(), &file.MoveRequest{
 		Src: &file.Path{
 			Path: src,
 		},
@@ -145,6 +146,13 @@ func (fs *DistributedFileSystem) getFileMeta(path string) (*file.File, error) {
 	return resp.GetFile(), nil
 }
 
+func JoinHostPort(url *file.FileStoreURL) string {
+	if url == nil {
+		return ""
+	}
+	return net.JoinHostPort(url.Host, strconv.Itoa(int(url.Port)))
+}
+
 func (fs *DistributedFileSystem) createFileMeta(local string, remote string) (*file.File, error) {
 	localFileInfo, err := os.Stat(local)
 	if err != nil {
@@ -152,8 +160,10 @@ func (fs *DistributedFileSystem) createFileMeta(local string, remote string) (*f
 	}
 	fileMD5Hash, err := utils.HashFileMD5(local)
 	resp, err := fs.fsclient.CreateFileMeta(context.Background(), &file.File{
-		Name:     localFileInfo.Name(),
-		Path:     remote,
+		Name: localFileInfo.Name(),
+		Path: &file.Path{
+			Path: remote,
+		},
 		Size:     localFileInfo.Size(),
 		Checksum: []byte(fileMD5Hash),
 	})
@@ -177,7 +187,7 @@ func (fs *DistributedFileSystem) Get(remote, local string) error {
 	if err != nil {
 		return err
 	}
-	dfsconn, err := grpc.Dial(net.JoinHostPort(fileMeta.GetFileStoreUrl().Host, fileMeta.GetFileStoreUrl().Port), grpc.WithInsecure())
+	dfsconn, err := grpc.Dial(JoinHostPort(fileMeta.GetFileStoreUrl()), grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
@@ -191,7 +201,7 @@ func (fs *DistributedFileSystem) Get(remote, local string) error {
 	err = getFileClient.Send(&file.GetFileRequest{
 		Command: file.TransferCommand_INIT,
 		Token:   nil,
-		Uuid:    fileMeta.Uuid,
+		Uuid:    []byte(fileMeta.Uuid),
 	})
 	if err != nil {
 		return err
@@ -217,10 +227,8 @@ func (fs *DistributedFileSystem) Get(remote, local string) error {
 			if err != nil {
 				return err
 			}
-		case *file.ControlledPacket_FileToChap:
-			fallthrough
-		case *file.ControlledPacket_Checksum:
-			fallthrough
+		//case *file.ControlledPacket_FileToChap:
+		//case *file.ControlledPacket_Checksum:
 		default:
 			panic("You should never receive this type of packet here.")
 		}
@@ -242,7 +250,7 @@ func (fs *DistributedFileSystem) Put(local, remote string) error {
 	if err != nil {
 		return err
 	}
-	dfsconn, err := grpc.Dial(net.JoinHostPort(remoteFile.GetFileStoreUrl().Host, remoteFile.GetFileStoreUrl().Port), grpc.WithInsecure())
+	dfsconn, err := grpc.Dial(JoinHostPort(remoteFile.GetFileStoreUrl()), grpc.WithInsecure())
 	if err != nil {
 		return err
 	}
