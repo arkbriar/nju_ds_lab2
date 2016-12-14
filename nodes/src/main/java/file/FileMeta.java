@@ -1,5 +1,7 @@
 package file;
 
+import java.util.Objects;
+
 /**
  * Created by Shunjie Ding on 13/12/2016.
  */
@@ -33,6 +35,9 @@ public abstract class FileMeta {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -40,11 +45,7 @@ public abstract class FileMeta {
             return false;
         }
         final FileMeta other = (FileMeta) obj;
-        if (this.name == null) {
-            return other.name == null;
-        } else {
-            return this.name.equals(other.name);
-        }
+        return Objects.equals(this.name, other.name);
     }
 
     @Override

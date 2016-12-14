@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -87,6 +88,9 @@ public class TreeNode<T> {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -97,11 +101,7 @@ public class TreeNode<T> {
         if (!value.getClass().isAssignableFrom(other.value.getClass())) {
             return false;
         }
-        if (this.value == null) {
-            return other.value == null;
-        } else {
-            return this.value.equals(other.value);
-        }
+        return Objects.equals(this.value, other.value);
     }
 
     @Override
