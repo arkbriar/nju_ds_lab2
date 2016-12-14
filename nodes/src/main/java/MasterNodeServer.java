@@ -16,8 +16,6 @@ import utils.AbstractGRPCServer;
 class MasterNodeServer extends AbstractGRPCServer {
     private static final Logger logger = Logger.getLogger(MasterNodeServer.class.getName());
 
-    private RedissonClient redissonClient;
-
     /**
      * serviceList is a list of {@link BindableService} which will be used for this server.
      * This should be initialized before any {@code buildServer} is called.
@@ -26,7 +24,7 @@ class MasterNodeServer extends AbstractGRPCServer {
 
     MasterNodeServer(int port, Config config) {
         super(logger);
-        redissonClient = Redisson.create(config);
+        RedissonClient redissonClient = Redisson.create(config);
         serviceList.add(new HeartBeatService());
         serviceList.add(new FileSystemMetaService(redissonClient));
         buildServer(port);

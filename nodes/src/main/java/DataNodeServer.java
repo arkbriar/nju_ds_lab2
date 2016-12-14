@@ -16,8 +16,6 @@ import utils.AbstractGRPCServer;
 class DataNodeServer extends AbstractGRPCServer {
     private static final Logger logger = Logger.getLogger(DataNodeServer.class.getName());
 
-    private RedissonClient redissonClient;
-
     private String path;
 
     /**
@@ -28,7 +26,7 @@ class DataNodeServer extends AbstractGRPCServer {
 
     DataNodeServer(int port, String path, Config config) {
         super(logger);
-        redissonClient = Redisson.create(config);
+        RedissonClient redissonClient = Redisson.create(config);
         serviceList.add(new HeartBeatService());
         serviceList.add(new FileSystemDataService(redissonClient, path));
         buildServer(port);

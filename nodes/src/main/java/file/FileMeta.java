@@ -13,7 +13,7 @@ public abstract class FileMeta {
     /**
      * Modification time of this file, measured in milliseconds in format of UTC time.
      */
-    protected long modificationTime;
+    private long modificationTime;
 
     public void setName(String name) {
         this.name = name;

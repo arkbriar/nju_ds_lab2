@@ -26,7 +26,7 @@ public abstract class AbstractGRPCServer {
         buildServer(ServerBuilder.forPort(port), port);
     }
 
-    void buildServer(ServerBuilder<?> serverBuilder, int port) {
+    private void buildServer(ServerBuilder<?> serverBuilder, int port) {
         this.port = port;
         if (getServiceList() == null) {
             throw new RuntimeException("service list should not be empty");

@@ -82,9 +82,6 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
                                 throw new StatusRuntimeException(Status.INTERNAL);
                             }
                             break;
-                        case CHECKSUM:
-                            break;
-                        case END:
                         case FILE_TO_CHAP:
                         case DATA_NOT_SET:
                         default:

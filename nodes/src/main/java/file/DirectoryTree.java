@@ -19,7 +19,7 @@ public class DirectoryTree {
     /**
      * Root of this directory tree. It must carry a Directory with name "/".
      */
-    private final TreeNode<FileMeta> root = new TreeNode(null, new Directory("/"));
+    private final TreeNode<FileMeta> root = new TreeNode<FileMeta>(null, new Directory("/"));
 
     public TreeNode getRoot() {
         return root;
@@ -48,6 +48,7 @@ public class DirectoryTree {
         }
         TreeNode<FileMeta> current = root;
         Enumeration<String> subPaths = path.subPaths();
+        assert subPaths != null;
         while (subPaths.hasMoreElements()) {
             String subPath = subPaths.nextElement();
             current = getNextNode(current, subPath);
@@ -86,10 +87,11 @@ public class DirectoryTree {
     private TreeNode<FileMeta> createIntermediateDirectories(Path path) {
         TreeNode<FileMeta> node = root;
         Enumeration<String> subPaths = path.getParent().subPaths();
+        assert subPaths != null;
         while (subPaths.hasMoreElements()) {
             String subPath = subPaths.nextElement();
             node = getNextNode(node, subPath);
-            if (node == null) {
+            if (node != null) {
                 node = node.addChild(new Directory(subPath));
             }
         }

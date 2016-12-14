@@ -8,7 +8,7 @@ import java.util.Set;
  * Created by Shunjie Ding on 13/12/2016.
  */
 public class TreeNode<T> {
-    private TreeNode parent;
+    private TreeNode<T> parent;
     private T value;
     private Set<TreeNode<T>> childrenSet = new HashSet<>();
 
@@ -16,7 +16,7 @@ public class TreeNode<T> {
         this(null, value);
     }
 
-    public TreeNode(TreeNode parent, T value) {
+    public TreeNode(TreeNode<T> parent, T value) {
         this.parent = parent;
         this.value = value;
     }
@@ -32,7 +32,7 @@ public class TreeNode<T> {
     /**
      * Returns the parent <code>TreeNode</code> of the receiver.
      */
-    public TreeNode getParent() {
+    public TreeNode<T> getParent() {
         return parent;
     }
 
@@ -63,7 +63,7 @@ public class TreeNode<T> {
     }
 
     public TreeNode<T> addChild(T value) {
-        TreeNode<T> newNode = new TreeNode<T>(this, value);
+        TreeNode<T> newNode = new TreeNode<>(this, value);
         childrenSet.add(newNode);
         return newNode;
     }
@@ -74,7 +74,7 @@ public class TreeNode<T> {
         return child;
     }
 
-    public void setParent(TreeNode parent) {
+    public void setParent(TreeNode<T> parent) {
         this.parent = parent;
     }
 
@@ -98,10 +98,8 @@ public class TreeNode<T> {
             return false;
         }
         final TreeNode other = (TreeNode) obj;
-        if (!value.getClass().isAssignableFrom(other.value.getClass())) {
-            return false;
-        }
-        return Objects.equals(this.value, other.value);
+        return value.getClass().isAssignableFrom(other.value.getClass())
+            && Objects.equals(this.value, other.value);
     }
 
     @Override

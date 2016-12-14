@@ -44,8 +44,6 @@ public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
 
     private DirectoryTree directoryTree = new DirectoryTree();
 
-    private Map<Integer, FileStore> storeMap = new HashMap<>();
-
     public FileSystemMetaService(RedissonClient redissonClient) {
         this.redissonClient = redissonClient;
     }
