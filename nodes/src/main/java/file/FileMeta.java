@@ -46,4 +46,9 @@ public abstract class FileMeta {
             return this.name.equals(other.name);
         }
     }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
 }

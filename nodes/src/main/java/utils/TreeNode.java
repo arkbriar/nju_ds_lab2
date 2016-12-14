@@ -103,4 +103,9 @@ public class TreeNode<T> {
             return this.value.equals(other.value);
         }
     }
+
+    @Override
+    public int hashCode() {
+        return this.value.hashCode();
+    }
 }
