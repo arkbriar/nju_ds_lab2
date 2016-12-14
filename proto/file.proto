@@ -124,7 +124,5 @@ message ControlledPacket {
   oneof data {
     File file_to_chap = 99;
     FileBlock file_block = 1;
-    bytes checksum = 2;
-    bool end = 3;
   }
 }
