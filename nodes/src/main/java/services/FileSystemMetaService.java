@@ -55,24 +55,26 @@ public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
         try {
             file.Path path = new file.Path(request.getPath());
             TreeNode<FileMeta> node = directoryTree.getNode(path);
-            FileMeta fileMeta = node.getValue();
-            if (fileMeta == null) {
+            if (node == null) {
                 responseObserver.onNext(
                     ListResponse.newBuilder()
                         .setError(FileSystemError.newBuilder()
                                       .setStatus(FileSystemError.FileSystemErrorStatus.NO_SUCH_FILE)
-                                      .setErrorMessage(path.toString() + " does not exists")
-                                      .build())
+                                      .setErrorMessage(path.toString() + " does not exists"))
                         .build());
-            } else if (!fileMeta.isDir()) {
-                responseObserver.onNext(
-                    ListResponse.newBuilder().addName(fileMeta.getName()).build());
             } else {
-                List<String> fileList = new ArrayList<>();
-                for (TreeNode<FileMeta> child : node.children()) {
-                    fileList.add(child.getValue().getName());
+                FileMeta fileMeta = node.getValue();
+                assert fileMeta != null;
+                if (!fileMeta.isDir()) {
+                    responseObserver.onNext(
+                        ListResponse.newBuilder().addName(fileMeta.getName()).build());
+                } else {
+                    List<String> fileList = new ArrayList<>();
+                    for (TreeNode<FileMeta> child : node.children()) {
+                        fileList.add(child.getValue().getName());
+                    }
+                    responseObserver.onNext(ListResponse.newBuilder().addAllName(fileList).build());
                 }
-                responseObserver.onNext(ListResponse.newBuilder().addAllName(fileList).build());
             }
         } catch (InvalidPathException e) {
             responseObserver.onNext(

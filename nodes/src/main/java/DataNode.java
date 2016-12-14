@@ -3,6 +3,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.redisson.config.Config;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -41,7 +42,9 @@ public class DataNode {
         } else {
             logger.info("Files are stored at " + directoryPath);
         }
-        DataNodeServer server = new DataNodeServer(port, directoryPath, null);
+        Config redisConfig = new Config();
+        redisConfig.useSingleServer().setAddress("localhost:6379");
+        DataNodeServer server = new DataNodeServer(port, directoryPath, redisConfig);
         server.startAndBlock();
     }
 }

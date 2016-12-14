@@ -11,11 +11,15 @@ import file.exceptions.InvalidPathException;
  */
 public class Path {
     private String path;
+    /**
+     * Denote 'some', 'else' as the sub paths of path '/some/else'.
+     * @{code subPaths} is null if and only if this path is root '/'.
+     */
     private String[] subPaths;
     private String fileName = null;
 
     private static boolean validate(String path) {
-        Pattern pattern = Pattern.compile("^(/[^/]+)*/([^/]+)$");
+        Pattern pattern = Pattern.compile("^(/[^/]+)*/([^/]*)$");
         return pattern.matcher(path).matches();
     }
 
@@ -28,22 +32,25 @@ public class Path {
     }
 
     public Path(String path) throws InvalidPathException {
-        this.path = trimRight(path, "/");
-        if (!validate(this.path)) {
-            throw new InvalidPathException(path + " is not a valid path");
-        }
-        this.subPaths = this.path.split("/");
-        assert this.subPaths.length > 0;
-        this.subPaths = Arrays.copyOfRange(this.subPaths, 1, this.subPaths.length);
-        if (!isRoot()) {
-            this.fileName = subPaths[subPaths.length - 1];
+        this.path = path;
+        if (!path.equals("/")) {
+            this.path = trimRight(this.path, "/");
+            if (!validate(this.path)) {
+                throw new InvalidPathException(path + " is not a valid path");
+            }
+            this.subPaths = this.path.split("/");
+            assert this.subPaths.length > 0;
+            this.subPaths = Arrays.copyOfRange(this.subPaths, 1, this.subPaths.length);
+            if (!isRoot()) {
+                this.fileName = subPaths[subPaths.length - 1];
+            }
         }
     }
 
     protected Path(String path, String[] subPaths) {
         this.path = path;
         this.subPaths = subPaths;
-        if (subPaths.length > 0) {
+        if (subPaths != null && subPaths.length > 0) {
             this.fileName = subPaths[subPaths.length - 1];
         }
     }
@@ -73,6 +80,9 @@ public class Path {
     }
 
     public final Enumeration<String> subPaths() {
+        if (subPaths == null) {
+            return null;
+        }
         return Collections.enumeration(Arrays.asList(subPaths));
     }
 

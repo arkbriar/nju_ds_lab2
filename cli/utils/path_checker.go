@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	pathPattern = regexp.MustCompile("^(/[^/]+)*/([^/]+)$")
+	pathPattern = regexp.MustCompile("^(/[^/]+)*/([^/]*)$")
 )
 
 func ValidatePath(path string) bool {

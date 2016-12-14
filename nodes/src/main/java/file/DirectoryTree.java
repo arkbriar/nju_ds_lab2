@@ -43,6 +43,9 @@ public class DirectoryTree {
         if (path == null) {
             return null;
         }
+        if (path.isRoot()) {
+            return root;
+        }
         TreeNode<FileMeta> current = root;
         Enumeration<String> subPaths = path.subPaths();
         while (subPaths.hasMoreElements()) {

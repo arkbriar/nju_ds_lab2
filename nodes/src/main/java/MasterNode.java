@@ -3,6 +3,8 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.redisson.config.Config;
+import org.redisson.config.RedissonNodeConfig;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -26,7 +28,9 @@ public class MasterNode {
         } else {
             logger.log(Level.WARNING, "No port specified, using default port 8088.");
         }
-        MasterNodeServer server = new MasterNodeServer(port, null);
+        Config redisConfig = new Config();
+        redisConfig.useSingleServer().setAddress("localhost:6379");
+        MasterNodeServer server = new MasterNodeServer(port, redisConfig);
         server.startAndBlock();
     }
 }
