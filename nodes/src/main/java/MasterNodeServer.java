@@ -1,7 +1,10 @@
+import io.grpc.BindableService;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import services.FileSystemMetaService;
 import heartbeat.HeartBeatService;
@@ -15,11 +18,22 @@ class MasterNodeServer extends AbstractGRPCServer {
 
     private RedissonClient redissonClient;
 
+    /**
+     * serviceList is a list of {@link BindableService} which will be used for this server.
+     * This should be initialized before any {@code buildServer} is called.
+     */
+    private List<BindableService> serviceList = new LinkedList<>();
+
     MasterNodeServer(int port, Config config) {
         super(logger);
         redissonClient = Redisson.create(config);
-        super.addService(new HeartBeatService())
-            .addService(new FileSystemMetaService(redissonClient));
+        serviceList.add(new HeartBeatService());
+        serviceList.add(new FileSystemMetaService(redissonClient));
         buildServer(port);
+    }
+
+    @Override
+    protected List<BindableService> getServiceList() {
+        return serviceList;
     }
 }

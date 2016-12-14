@@ -17,11 +17,6 @@ public abstract class AbstractGRPCServer {
 
     private Server server;
     private int port;
-    /**
-     * serviceList is a list of {@link BindableService} which will be used for this server.
-     * This should be initialized before any {@code buildServer} is called.
-     */
-    private List<BindableService> serviceList = new LinkedList<>();
 
     protected AbstractGRPCServer(Logger logger) {
         this.logger = logger;
@@ -33,20 +28,16 @@ public abstract class AbstractGRPCServer {
 
     void buildServer(ServerBuilder<?> serverBuilder, int port) {
         this.port = port;
-        for (BindableService service : serviceList) {
+        if (getServiceList() == null) {
+            throw new RuntimeException("service list should not be empty");
+        }
+        for (BindableService service : getServiceList()) {
             serverBuilder = serverBuilder.addService(service);
         }
         server = serverBuilder.build();
     }
 
-    protected List<BindableService> getServiceList() {
-        return serviceList;
-    }
-
-    public AbstractGRPCServer addService(BindableService service) {
-        serviceList.add(service);
-        return this;
-    }
+    protected abstract List<BindableService> getServiceList();
 
     /** Start serving requests. */
     public void start() throws IOException {
