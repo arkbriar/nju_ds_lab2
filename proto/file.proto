@@ -111,11 +111,13 @@ enum TransferCommand {
 }
 
 message PutFileResponse {
-  TransferCommand command = 1;
+  TransferCommand command = 100;
 }
 
 message GetFileRequest {
-  TransferCommand command = 1;
+  TransferCommand command = 100;
+  Token token = 99;
+  bytes uuid = 2;
 }
 
 message ControlledPacket {

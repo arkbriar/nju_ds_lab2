@@ -6,12 +6,16 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import net.file.ControlledPacket;
+import net.file.FileBlock;
 import net.file.FileStoreDeviceGrpc;
 import net.file.GetFileRequest;
 import net.file.PutFileResponse;
 import net.file.TransferCommand;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.redisson.api.RedissonClient;
 
+import java.io.EOFException;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,10 +85,6 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
                         case CHECKSUM:
                             break;
                         case END:
-                            responseObserver.onNext(PutFileResponse.newBuilder()
-                                                        .setCommand(TransferCommand.CLOSE)
-                                                        .build());
-                            break;
                         case FILE_TO_CHAP:
                         case DATA_NOT_SET:
                         default:
@@ -117,14 +117,49 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
     public StreamObserver<GetFileRequest> getFile(
         StreamObserver<ControlledPacket> responseObserver) {
         return new StreamObserver<GetFileRequest>() {
-            @Override
-            public void onNext(GetFileRequest value) {}
+            private FileInputStream fileInputStream = null;
 
             @Override
-            public void onError(Throwable t) {}
+            public void onNext(GetFileRequest value) {
+                if (fileInputStream == null) {
+                    assert value.getCommand() == TransferCommand.INIT;
+                    try {
+                        fileInputStream = new FileInputStream(path + "/" + value.getUuid());
+                        byte[] buffer = new byte[1024];
+                        while (fileInputStream.available() > 0) {
+                            int readBytes = fileInputStream.read(buffer);
+                            responseObserver.onNext(
+                                ControlledPacket.newBuilder()
+                                    .setFileBlock(FileBlock.newBuilder().setBlock(
+                                        ByteString.copyFrom(buffer, 0, readBytes)))
+                                    .build());
+                        }
+                        fileInputStream.close();
+                        fileInputStream = null;
+                        responseObserver.onCompleted();
+                    } catch (FileNotFoundException e) {
+                        throw new StatusRuntimeException(Status.INTERNAL);
+                    } catch (IOException e) {
+                        throw new StatusRuntimeException(Status.INTERNAL);
+                    }
+                }
+            }
 
             @Override
-            public void onCompleted() {}
+            public void onError(Throwable t) {
+                logger.log(Level.WARNING, t.getLocalizedMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                if (fileInputStream != null) {
+                    try {
+                        fileInputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         };
     }
 }
