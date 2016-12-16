@@ -9,6 +9,7 @@ import (
 
 	"strconv"
 
+	"github.com/heroku/docker-registry-client/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"nju.edu.cn/ds/lab2/cli/file"
@@ -266,10 +267,10 @@ func (fs *DistributedFileSystemImpl) Put(local, remote string) error {
 	defer localFile.Close()
 	// Start transformation
 	putFileClient, err := fsdclient.PutFile(fs.context)
-	defer putFileClient.CloseSend()
 	if err != nil {
 		return err
 	}
+	defer putFileClient.CloseSend()
 	err = putFileClient.Send(&file.ControlledPacket{
 		Data: &file.ControlledPacket_FileToChap{
 			FileToChap: remoteFile,
@@ -278,25 +279,32 @@ func (fs *DistributedFileSystemImpl) Put(local, remote string) error {
 	if err != nil {
 		return err
 	}
-	buffer := make([]byte, 1024)
-	for {
-		readSize, err := localFile.Read(buffer)
-		if err != nil {
-			if err == io.EOF {
-				break
+	waitc := make(chan struct{})
+	go func() {
+		buffer := make([]byte, 1024, 1024)
+		totalSent := 0
+		for {
+			readSize, err := localFile.Read(buffer)
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
 			}
-			return err
-		}
-		err = putFileClient.Send(&file.ControlledPacket{
-			Data: &file.ControlledPacket_FileBlock{
-				FileBlock: &file.FileBlock{
-					Block: buffer[:readSize],
+			totalSent += readSize
+			err = putFileClient.Send(&file.ControlledPacket{
+				Data: &file.ControlledPacket_FileBlock{
+					FileBlock: &file.FileBlock{
+						Block: buffer[:readSize],
+					},
 				},
-			},
-		})
-		if err != nil {
-			return err
+			})
+			if err != nil {
+				return err
+			}
 		}
-	}
+		logrus.Infof("File sent, total bytes is %d", totalSent)
+	}()
+	<-waitc
 	return nil
 }
