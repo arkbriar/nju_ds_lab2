@@ -28,21 +28,23 @@ func combineErrors(fserr fileSystemError, err error) error {
 	return nil
 }
 
-type DistributedFileSystem struct {
+type DistributedFileSystemImpl struct {
 	url      string
 	conn     *grpc.ClientConn
 	fsclient file.FileSystemClient
+	context  context.Context
 }
 
-func New(url string) *DistributedFileSystem {
-	return &DistributedFileSystem{
+func New(url string, token string) DistributedFileSystem {
+	return &DistributedFileSystemImpl{
 		url:      url,
 		conn:     nil,
 		fsclient: nil,
+		context:  context.WithValue(context.Background(), "TOKEN", token),
 	}
 }
 
-func (fs *DistributedFileSystem) Open() error {
+func (fs *DistributedFileSystemImpl) Open() error {
 	var err error
 	if fs.conn == nil {
 		fs.conn, err = grpc.Dial(fs.url, grpc.WithInsecure())
@@ -54,7 +56,7 @@ func (fs *DistributedFileSystem) Open() error {
 	return fmt.Errorf("already connected")
 }
 
-func (fs *DistributedFileSystem) Close() error {
+func (fs *DistributedFileSystemImpl) Close() error {
 	if fs.fsclient != nil {
 		err := fs.conn.Close()
 		fs.conn = nil
@@ -64,7 +66,7 @@ func (fs *DistributedFileSystem) Close() error {
 	return fmt.Errorf("not connected")
 }
 
-func (fs *DistributedFileSystem) List(path string) ([]string, error) {
+func (fs *DistributedFileSystemImpl) List(path string) ([]string, error) {
 	if fs.fsclient == nil {
 		return nil, fmt.Errorf("not connected")
 	}
@@ -80,14 +82,14 @@ func (fs *DistributedFileSystem) List(path string) ([]string, error) {
 	return resp.Name, nil
 }
 
-func (fs *DistributedFileSystem) Mkdir(path string) error {
+func (fs *DistributedFileSystemImpl) Mkdir(path string) error {
 	if fs.fsclient == nil {
 		return fmt.Errorf("not connected")
 	}
 	if !utils.ValidatePath(path) {
 		return utils.InvalidPathError(path)
 	}
-	resp, err := fs.fsclient.CreateDirectory(context.Background(), &file.Path{
+	resp, err := fs.fsclient.CreateDirectory(fs.context, &file.Path{
 		Path: path,
 	})
 	if err = combineErrors(resp, err); err != nil {
@@ -96,7 +98,7 @@ func (fs *DistributedFileSystem) Mkdir(path string) error {
 	return nil
 }
 
-func (fs *DistributedFileSystem) Move(src, dest string) error {
+func (fs *DistributedFileSystemImpl) Move(src, dest string) error {
 	if fs.fsclient == nil {
 		return fmt.Errorf("not connected")
 	}
@@ -106,7 +108,7 @@ func (fs *DistributedFileSystem) Move(src, dest string) error {
 	if !utils.ValidatePath(dest) {
 		return utils.InvalidPathError(dest)
 	}
-	resp, err := fs.fsclient.Move(context.Background(), &file.MoveRequest{
+	resp, err := fs.fsclient.Move(fs.context, &file.MoveRequest{
 		Src: &file.Path{
 			Path: src,
 		},
@@ -120,14 +122,14 @@ func (fs *DistributedFileSystem) Move(src, dest string) error {
 	return nil
 }
 
-func (fs *DistributedFileSystem) Remove(path string) error {
+func (fs *DistributedFileSystemImpl) Remove(path string) error {
 	if fs.fsclient == nil {
 		return fmt.Errorf("not connected")
 	}
 	if !utils.ValidatePath(path) {
 		return utils.InvalidPathError(path)
 	}
-	resp, err := fs.fsclient.Delete(context.Background(), &file.Path{
+	resp, err := fs.fsclient.Delete(fs.context, &file.Path{
 		Path: path,
 	})
 	if err = combineErrors(resp, err); err != nil {
@@ -136,8 +138,8 @@ func (fs *DistributedFileSystem) Remove(path string) error {
 	return nil
 }
 
-func (fs *DistributedFileSystem) getFileMeta(path string) (*file.File, error) {
-	resp, err := fs.fsclient.GetFileMeta(context.Background(), &file.Path{
+func (fs *DistributedFileSystemImpl) getFileMeta(path string) (*file.File, error) {
+	resp, err := fs.fsclient.GetFileMeta(fs.context, &file.Path{
 		Path: path,
 	})
 	if err = combineErrors(resp, err); err != nil {
@@ -153,13 +155,13 @@ func JoinHostPort(url *file.FileStoreURL) string {
 	return net.JoinHostPort(url.Host, strconv.Itoa(int(url.Port)))
 }
 
-func (fs *DistributedFileSystem) createFileMeta(local string, remote string) (*file.File, error) {
+func (fs *DistributedFileSystemImpl) createFileMeta(local string, remote string) (*file.File, error) {
 	localFileInfo, err := os.Stat(local)
 	if err != nil {
 		return nil, err
 	}
 	fileMD5Hash, err := utils.HashFileMD5(local)
-	resp, err := fs.fsclient.CreateFileMeta(context.Background(), &file.File{
+	resp, err := fs.fsclient.CreateFileMeta(fs.context, &file.File{
 		Name: localFileInfo.Name(),
 		Path: &file.Path{
 			Path: remote,
@@ -173,7 +175,7 @@ func (fs *DistributedFileSystem) createFileMeta(local string, remote string) (*f
 	return resp.GetFile(), nil
 }
 
-func (fs *DistributedFileSystem) Get(remote, local string) error {
+func (fs *DistributedFileSystemImpl) Get(remote, local string) error {
 	if fs.fsclient == nil {
 		return fmt.Errorf("not connected")
 	}
@@ -193,7 +195,7 @@ func (fs *DistributedFileSystem) Get(remote, local string) error {
 	}
 	defer dfsconn.Close()
 	fsdclient := file.NewFileStoreDeviceClient(dfsconn)
-	getFileClient, err := fsdclient.GetFile(context.Background())
+	getFileClient, err := fsdclient.GetFile(fs.context)
 	if err != nil {
 		return err
 	}
@@ -236,7 +238,7 @@ func (fs *DistributedFileSystem) Get(remote, local string) error {
 	return nil
 }
 
-func (fs *DistributedFileSystem) Put(local, remote string) error {
+func (fs *DistributedFileSystemImpl) Put(local, remote string) error {
 	if fs.fsclient == nil {
 		return fmt.Errorf("not connected")
 	}
@@ -262,7 +264,7 @@ func (fs *DistributedFileSystem) Put(local, remote string) error {
 	}
 	defer localFile.Close()
 	// Start transformation
-	putFileClient, err := fsdclient.PutFile(context.Background())
+	putFileClient, err := fsdclient.PutFile(fs.context)
 	defer putFileClient.CloseSend()
 	if err != nil {
 		return err

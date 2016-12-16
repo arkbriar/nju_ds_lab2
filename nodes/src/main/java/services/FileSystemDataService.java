@@ -39,6 +39,9 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
     private Path path;
 
     public FileSystemDataService(RedissonClient redissonClient, String path) {
+        if (redissonClient == null) {
+            throw new NullPointerException();
+        }
         this.redissonClient = redissonClient;
         FileSystem fileSystem = FileSystems.getDefault();
         this.path = fileSystem.getPath(path).toAbsolutePath();

@@ -2,8 +2,10 @@ package services;
 
 import com.google.protobuf.ByteString;
 
+import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import net.file.CopyRequest;
 import net.file.CopyResponse;
@@ -20,6 +22,7 @@ import net.file.MoveResponse;
 import net.file.Path;
 import net.file.Token;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.redisson.api.RBucket;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 
@@ -45,7 +48,16 @@ public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
     private DirectoryTree directoryTree = new DirectoryTree();
 
     public FileSystemMetaService(RedissonClient redissonClient) {
+        if (redissonClient == null) {
+            throw new NullPointerException();
+        }
         this.redissonClient = redissonClient;
+    }
+
+    private boolean verifyAuthToken(String token) {
+        RBucket<String> tokenBucket = redissonClient.getBucket("token/" + token);
+        String username = tokenBucket.get();
+        return !username.isEmpty();
     }
 
     @Override

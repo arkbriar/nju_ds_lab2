@@ -1,4 +1,7 @@
 import io.grpc.BindableService;
+import io.grpc.ServerInterceptor;
+import io.grpc.ServerInterceptors;
+import io.grpc.ServerServiceDefinition;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -6,8 +9,10 @@ import org.redisson.config.Config;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import services.FileSystemAuthService;
 import services.FileSystemMetaService;
 import heartbeat.HeartBeatService;
+import services.interceptors.FileSystemAuthInterceptor;
 import utils.AbstractGRPCServer;
 
 /**
@@ -26,7 +31,14 @@ class MasterNodeServer extends AbstractGRPCServer {
         super(logger);
         RedissonClient redissonClient = Redisson.create(config);
         serviceList.add(new HeartBeatService());
-        serviceList.add(new FileSystemMetaService(redissonClient));
+        serviceList.add(new BindableService() {
+            @Override
+            public ServerServiceDefinition bindService() {
+                return ServerInterceptors.intercept(new FileSystemMetaService(redissonClient),
+                    new FileSystemAuthInterceptor(redissonClient));
+            }
+        });
+        serviceList.add(new FileSystemAuthService(redissonClient));
         buildServer(port);
     }
 

@@ -32,7 +32,8 @@ import (
 var cfgFile string
 
 var (
-	url string
+	url   string
+	token string
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -63,6 +64,7 @@ func init() {
 
 	//RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dfscli.yaml)")
 	RootCmd.PersistentFlags().StringVarP(&url, "url", "u", "localhost:8088", "URL of remote DFS master node.")
+	RootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "Token for DFS access")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -81,8 +83,8 @@ func initConfig() {
 	}
 }
 
-func initDfsc() *dfs.DistributedFileSystem {
-	dfsc := dfs.New(url)
+func initDfsc() dfs.DistributedFileSystem {
+	dfsc := dfs.New(url, token)
 	err := dfsc.Open()
 	if err != nil {
 		fmt.Println(err)
