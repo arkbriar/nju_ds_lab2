@@ -17,7 +17,7 @@ public class File extends FileMeta {
 
     private UUID uuid;
 
-    private int storeId = -1;
+    private FileStore.FileStoreUrl url = null;
 
     public File(String name, long size, ByteString checksum) {
         this.name = name;
@@ -50,19 +50,19 @@ public class File extends FileMeta {
         this.uuid = uuid;
     }
 
-    public int getStoreId() {
-        return storeId;
-    }
-
-    public void setStoreId(int storeId) {
-        this.storeId = storeId;
-    }
-
     public ByteString getChecksum() {
         return checksum;
     }
 
     public void setChecksum(ByteString checksum) {
         this.checksum = checksum;
+    }
+
+    public FileStore.FileStoreUrl getUrl() {
+        return url;
+    }
+
+    public void setUrl(FileStore.FileStoreUrl url) {
+        this.url = url;
     }
 }

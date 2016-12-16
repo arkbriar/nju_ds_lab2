@@ -4,29 +4,40 @@ package file;
  * Created by Shunjie Ding on 13/12/2016.
  */
 public class FileStore {
-    private int id;
     private String name;
+
     private long totalSpace;
+
     private long unallocatedSpace;
+
     private long usableSpace;
-    private String host;
-    private int port;
+
+    public static class FileStoreUrl {
+        private String host;
+        private int port;
+
+        public FileStoreUrl(String host, int port) {
+            this.host = host;
+            this.port = port;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public int getPort() {
+            return port;
+        }
+    }
+
+    private FileStoreUrl url;
 
     public FileStore(String name, long totalSpace, long usableSpace, String host, int port) {
         this.name = name;
         this.totalSpace = totalSpace;
         this.unallocatedSpace = usableSpace;
         this.usableSpace = usableSpace;
-        this.host = host;
-        this.port = port;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+        this.url = new FileStoreUrl(host, port);
     }
 
     public String getName() {
@@ -59,21 +70,5 @@ public class FileStore {
 
     public void setUsableSpace(long usableSpace) {
         this.usableSpace = usableSpace;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 }

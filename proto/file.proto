@@ -43,20 +43,20 @@ message FileBlock {
 }
 
 service FileSystem {
-  rpc List(Path) returns (ListResponse);
-  rpc Copy(CopyRequest) returns (CopyResponse);
-  rpc CreateDirectory(Path) returns (CreateDirectoryResponse);
-  rpc Delete(Path) returns (DeleteResponse);
-  rpc DeleteIfExists(Path) returns (DeleteResponse);
-  rpc Move(MoveRequest) returns (MoveResponse);
-  rpc CreateFileMeta(File) returns (CreateFileMetaResponse);
-  rpc GetFileMeta(Path) returns (GetFileMetaResponse);
-  rpc RequestAccessToken(Path) returns (Token);
+  rpc List(Path) returns (ListResponse) {}
+  rpc Copy(CopyRequest) returns (CopyResponse) {}
+  rpc CreateDirectory(Path) returns (CreateDirectoryResponse) {}
+  rpc Delete(Path) returns (DeleteResponse) {}
+  rpc DeleteIfExists(Path) returns (DeleteResponse) {}
+  rpc Move(MoveRequest) returns (MoveResponse) {}
+  rpc CreateFileMeta(File) returns (CreateFileMetaResponse) {}
+  rpc GetFileMeta(Path) returns (GetFileMetaResponse) {}
+  rpc RequestAccessToken(Path) returns (Token) {}
 }
 
 service FileStoreDevice {
-  rpc PutFile(stream ControlledPacket) returns (stream PutFileResponse);
-  rpc GetFile(stream GetFileRequest) returns (stream ControlledPacket);
+  rpc PutFile(stream ControlledPacket) returns (stream PutFileResponse) {}
+  rpc GetFile(stream GetFileRequest) returns (stream ControlledPacket) {}
 }
 
 message Token {
@@ -122,7 +122,8 @@ message GetFileRequest {
 
 message ControlledPacket {
   oneof data {
-    File file_to_chap = 99;
-    FileBlock file_block = 1;
+    File file_to_chap = 1;
+    FileBlock file_block = 2;
+    TransferCommand command = 3;
   }
 }

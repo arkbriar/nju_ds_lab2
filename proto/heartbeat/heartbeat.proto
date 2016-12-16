@@ -34,5 +34,5 @@ service HeartBeat {
   //
   // Accepts a stream of the HeartBeatRequests sent while a node is up,
   // and receives a HeartBeatResponse after each HeartBeat.
-  rpc CheckHealth(stream HeartBeatRequest) returns (stream HeartBeatResponse);
+  rpc CheckHealth(stream HeartBeatRequest) returns (stream HeartBeatResponse) {}
 }

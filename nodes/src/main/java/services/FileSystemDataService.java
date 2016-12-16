@@ -36,7 +36,7 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
 
     private Path path;
 
-    public FileSystemDataService(RedissonClient redissonClient, String path) {
+    public FileSystemDataService(RedissonClient redissonClient, String path) throws IOException {
         if (redissonClient == null) {
             throw new NullPointerException();
         }
@@ -44,7 +44,12 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
         FileSystem fileSystem = FileSystems.getDefault();
         this.path = fileSystem.getPath(path).toAbsolutePath();
         if (!Files.exists(this.path) || !this.path.toFile().isDirectory()) {
-            throw new RuntimeException(path + " doesn't exist or isn't a directory.");
+            if (this.path.startsWith("/tmp")) {
+                logger.info(this.path + " does not exists, creating");
+                Files.createDirectory(this.path);
+            } else {
+                throw new RuntimeException(path + " doesn't exist or isn't a directory.");
+            }
         }
     }
 
@@ -68,10 +73,8 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
                             new FileOutputStream(path.toString() + "/" + this.file.getUuid());
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
-                        throw new StatusRuntimeException(Status.INTERNAL);
+                        responseObserver.onError(new StatusRuntimeException(Status.INTERNAL));
                     }
-                    responseObserver.onNext(
-                        PutFileResponse.newBuilder().setCommand(TransferCommand.INIT).build());
                 } else {
                     switch (value.getDataCase()) {
                         case FILE_BLOCK:
@@ -82,6 +85,13 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
                                 e.printStackTrace();
                                 throw new StatusRuntimeException(Status.INTERNAL);
                             }
+                            break;
+                        case COMMAND:
+                            TransferCommand command = value.getCommand();
+                            assert command == TransferCommand.CLOSE;
+                            responseObserver.onNext(PutFileResponse.newBuilder()
+                                                        .setCommand(TransferCommand.CLOSE)
+                                                        .build());
                             break;
                         case FILE_TO_CHAP:
                         case DATA_NOT_SET:
@@ -95,6 +105,7 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
 
             @Override
             public void onError(Throwable t) {
+                t.printStackTrace();
                 logger.log(Level.WARNING, t.getLocalizedMessage());
             }
 
@@ -122,7 +133,8 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
                 if (fileInputStream == null) {
                     assert value.getCommand() == TransferCommand.INIT;
                     try {
-                        fileInputStream = new FileInputStream(path + "/" + value.getUuid());
+                        fileInputStream =
+                            new FileInputStream(path + "/" + value.getUuid().toStringUtf8());
                         byte[] buffer = new byte[1024];
                         while (fileInputStream.available() > 0) {
                             int readBytes = fileInputStream.read(buffer);
@@ -133,18 +145,24 @@ public class FileSystemDataService extends FileStoreDeviceGrpc.FileStoreDeviceIm
                                     .build());
                         }
                         fileInputStream.close();
-                        fileInputStream = null;
-                        responseObserver.onCompleted();
+                        responseObserver.onNext(ControlledPacket.newBuilder()
+                                                    .setCommand(TransferCommand.CLOSE)
+                                                    .build());
                     } catch (FileNotFoundException e) {
-                        throw new StatusRuntimeException(Status.INTERNAL);
+                        responseObserver.onError(new StatusRuntimeException(Status.INTERNAL));
                     } catch (IOException e) {
-                        throw new StatusRuntimeException(Status.INTERNAL);
+                        responseObserver.onError(new StatusRuntimeException(Status.INTERNAL));
                     }
+                } else {
+                    assert value.getCommand() == TransferCommand.CLOSE;
+                    fileInputStream = null;
+                    responseObserver.onCompleted();
                 }
             }
 
             @Override
             public void onError(Throwable t) {
+                t.printStackTrace();
                 logger.log(Level.WARNING, t.getLocalizedMessage());
             }
 

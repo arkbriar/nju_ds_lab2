@@ -10,6 +10,7 @@ import net.file.CopyResponse;
 import net.file.CreateDirectoryResponse;
 import net.file.CreateFileMetaResponse;
 import net.file.DeleteResponse;
+import net.file.FileStoreURL;
 import net.file.FileSystemError;
 import net.file.FileSystemGrpc;
 import net.file.GetFileMetaResponse;
@@ -28,6 +29,7 @@ import java.util.List;
 import file.DirectoryTree;
 import file.File;
 import file.FileMeta;
+import file.FileStore;
 import file.exceptions.FileAlreadyExistsException;
 import file.exceptions.FileSystemException;
 import file.exceptions.InvalidPathException;
@@ -292,14 +294,19 @@ public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
         try {
             file.Path filePath = new file.Path(request.getPath().getPath());
             File file = new File(filePath.getFileName(), request.getSize(), request.getChecksum());
+            file.setUrl(new FileStore.FileStoreUrl("localhost", 10088));
             directoryTree.createFile(filePath, file);
-            responseObserver.onNext(CreateFileMetaResponse.newBuilder()
-                                        .setFile(
-                                            // TODO(aribriar@gmail.com) set store url.
-                                            net.file.File.newBuilder(request)
-                                                .setUuid(file.getUuid().toString())
-                                                .build())
-                                        .build());
+            responseObserver.onNext(
+                CreateFileMetaResponse.newBuilder()
+                    .setFile(
+                        // TODO(aribriar@gmail.com) set store url.
+                        net.file.File.newBuilder(request)
+                            .setUuid(file.getUuid().toString())
+                            .setFileStoreUrl(FileStoreURL.newBuilder()
+                                                 .setHost(file.getUrl().getHost())
+                                                 .setPort(file.getUrl().getPort()))
+                            .build())
+                    .build());
         } catch (InvalidPathException e) {
             responseObserver.onNext(
                 CreateFileMetaResponse.newBuilder()
@@ -352,6 +359,9 @@ public class FileSystemMetaService extends FileSystemGrpc.FileSystemImplBase {
                                 .setSize(file.getSize())
                                 .setUuid(file.getUuid().toString())
                                 .setChecksum(file.getChecksum())
+                                .setFileStoreUrl(FileStoreURL.newBuilder()
+                                                     .setHost(file.getUrl().getHost())
+                                                     .setPort(file.getUrl().getPort()))
                                 .build())
                         .build());
             }

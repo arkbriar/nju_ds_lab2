@@ -3,6 +3,7 @@ import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -24,7 +25,7 @@ class DataNodeServer extends AbstractGRPCServer {
      */
     private List<BindableService> serviceList = new LinkedList<>();
 
-    DataNodeServer(int port, String path, Config config) {
+    DataNodeServer(int port, String path, Config config) throws IOException {
         super(logger);
         RedissonClient redissonClient = Redisson.create(config);
         serviceList.add(new HeartBeatService());

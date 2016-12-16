@@ -197,7 +197,7 @@ func (fs *DistributedFileSystemImpl) Get(remote, local string) error {
 	}
 	defer dfsconn.Close()
 	fsdclient := file.NewFileStoreDeviceClient(dfsconn)
-	getFileClient, err := fsdclient.GetFile(fs.context)
+	getFileClient, err := fsdclient.GetFile(context.Background())
 	if err != nil {
 		return err
 	}
@@ -231,6 +231,14 @@ func (fs *DistributedFileSystemImpl) Get(remote, local string) error {
 			if err != nil {
 				return err
 			}
+		case *file.ControlledPacket_Command:
+			command := resp.GetCommand()
+			if command == file.TransferCommand_CLOSE {
+				getFileClient.Send(&file.GetFileRequest{
+					Command: file.TransferCommand_CLOSE,
+				})
+			}
+			return nil
 		//case *file.ControlledPacket_FileToChap:
 		//case *file.ControlledPacket_Checksum:
 		default:
@@ -266,7 +274,7 @@ func (fs *DistributedFileSystemImpl) Put(local, remote string) error {
 	}
 	defer localFile.Close()
 	// Start transformation
-	putFileClient, err := fsdclient.PutFile(fs.context)
+	putFileClient, err := fsdclient.PutFile(context.Background())
 	if err != nil {
 		return err
 	}
@@ -279,32 +287,37 @@ func (fs *DistributedFileSystemImpl) Put(local, remote string) error {
 	if err != nil {
 		return err
 	}
-	waitc := make(chan struct{})
-	go func() {
-		buffer := make([]byte, 1024, 1024)
-		totalSent := 0
-		for {
-			readSize, err := localFile.Read(buffer)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				return err
+	buffer := make([]byte, 1024, 1024)
+	totalSent := 0
+	for {
+		readSize, err := localFile.Read(buffer)
+		if err != nil {
+			if err == io.EOF {
+				break
 			}
-			totalSent += readSize
-			err = putFileClient.Send(&file.ControlledPacket{
-				Data: &file.ControlledPacket_FileBlock{
-					FileBlock: &file.FileBlock{
-						Block: buffer[:readSize],
-					},
-				},
-			})
-			if err != nil {
-				return err
-			}
+			return err
 		}
-		logrus.Infof("File sent, total bytes is %d", totalSent)
-	}()
-	<-waitc
+		totalSent += readSize
+		err = putFileClient.Send(&file.ControlledPacket{
+			Data: &file.ControlledPacket_FileBlock{
+				FileBlock: &file.FileBlock{
+					Block: buffer[:readSize],
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+	err = putFileClient.Send(&file.ControlledPacket{
+		Data: &file.ControlledPacket_Command{
+			Command: file.TransferCommand_CLOSE,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	putFileClient.Recv()
+	logrus.Infof("File sent, total bytes is %d", totalSent)
 	return nil
 }

@@ -28,7 +28,7 @@ public class DataNode {
         if (cmd.hasOption("t")) {
             port = Integer.valueOf(cmd.getOptionValue("t"));
         } else {
-            logger.info("No port specified, using default port 8088.");
+            logger.info("No port specified, using default port 10088.");
         }
         if (cmd.hasOption("n")) {
             name = cmd.getOptionValue("n");

@@ -53,10 +53,14 @@ public class DirectoryTree {
             String subPath = subPaths.nextElement();
             current = getNextNode(current, subPath);
             if (current == null || !current.getValue().isDir()) {
-                return null;
+                break;
             }
         }
-        return current;
+        if (!subPaths.hasMoreElements()) {
+            return current;
+        } else {
+            return null;
+        }
     }
 
     /**

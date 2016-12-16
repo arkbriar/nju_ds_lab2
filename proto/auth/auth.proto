@@ -7,7 +7,7 @@ option java_outer_classname = "AuthProto";
 package auth;
 
 service Auth {
-  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Login(LoginRequest) returns (LoginResponse) {}
 }
 
 message LoginRequest {

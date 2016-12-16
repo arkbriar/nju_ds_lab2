@@ -53,7 +53,8 @@ public class FileSystemAuthInterceptor implements ServerInterceptor {
         ServerCall.Listener<ReqT> delegateListener = next.startCall(call, headers);
         boolean tokenValid = false;
         if (token != null && !token.isEmpty()) {
-            RBucket<String> tokenBucket = redissonClient.getBucket("token/" + token, new StringCodec());
+            RBucket<String> tokenBucket =
+                redissonClient.getBucket("token/" + token, new StringCodec());
             if (tokenBucket.isExists() && !tokenBucket.get().isEmpty()) {
                 tokenBucket.expireAsync(5, TimeUnit.MINUTES);
                 tokenValid = true;

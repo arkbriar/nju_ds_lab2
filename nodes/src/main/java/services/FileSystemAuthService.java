@@ -38,8 +38,8 @@ public class FileSystemAuthService extends AuthGrpc.AuthImplBase {
     public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         String username = request.getUsername();
         String password = request.getPassword();
-        RBucket<String> passwordBucket = redissonClient.getBucket("user/" + username + "/password",
-            new StringCodec());
+        RBucket<String> passwordBucket =
+            redissonClient.getBucket("user/" + username + "/password", new StringCodec());
         String passwordStored = passwordBucket.get();
         if (passwordStored.equals(DigestUtils.md5Hex(password))) {
             RAtomicLong loginTimes =
