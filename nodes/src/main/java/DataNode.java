@@ -25,8 +25,8 @@ public class DataNode {
         CommandLine cmd = parser.parse(options, args);
         int port = 10088;
         String name = UUID.randomUUID().toString();
-        if (cmd.hasOption("t")) {
-            port = Integer.valueOf(cmd.getOptionValue("t"));
+        if (cmd.hasOption("p")) {
+            port = Integer.valueOf(cmd.getOptionValue("p"));
         } else {
             logger.info("No port specified, using default port 10088.");
         }

@@ -10,3 +10,19 @@ else
     ln -d cli $GOPATH/nju.edu.cn/ds/lab2/cli
 fi
 ```
+
+# Build
+
+```bash
+cd nodes && gradle jar && cd ..
+cd cli && make && mv dfscli ../ && cd ..
+mv nodes/build/libs/nodes-1.0-SNAPSHOT.jar nodes.jar
+```
+
+# Run
+
+Prepare a redis server on localhost:6379
+```bash
+java -cp nodes.jar MasterNode -p port
+java -cp nodes.jar DataNode -p port -n name -d store_dir
+```

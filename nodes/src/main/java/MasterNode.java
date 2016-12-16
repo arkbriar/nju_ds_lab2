@@ -22,8 +22,8 @@ public class MasterNode {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
         int port = 8088;
-        if (cmd.hasOption("t")) {
-            port = Integer.valueOf(cmd.getOptionValue("t"));
+        if (cmd.hasOption("p")) {
+            port = Integer.valueOf(cmd.getOptionValue("p"));
         } else {
             logger.log(Level.WARNING, "No port specified, using default port 8088.");
         }
