@@ -11,10 +11,8 @@ import net.file.FileStoreDeviceGrpc;
 import net.file.GetFileRequest;
 import net.file.PutFileResponse;
 import net.file.TransferCommand;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.redisson.api.RedissonClient;
 
-import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

@@ -4,7 +4,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.redisson.config.Config;
-import org.redisson.config.RedissonNodeConfig;
 
 import java.io.IOException;
 import java.util.logging.Level;

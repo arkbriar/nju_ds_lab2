@@ -1,5 +1,4 @@
 import io.grpc.BindableService;
-import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import org.redisson.Redisson;
@@ -9,9 +8,9 @@ import org.redisson.config.Config;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import heartbeat.HeartBeatService;
 import services.FileSystemAuthService;
 import services.FileSystemMetaService;
-import heartbeat.HeartBeatService;
 import services.interceptors.FileSystemAuthInterceptor;
 import utils.AbstractGRPCServer;
 

@@ -44,7 +44,8 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		token, err := dfs.Login(username, password, url)
 		if err != nil {
-			logrus.Panic(err)
+			logrus.Error(err)
+			logrus.Exit(-1)
 		}
 		logrus.Infof("The token is %s", token)
 	},

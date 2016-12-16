@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"nju.edu.cn/ds/lab2/cli/file"
 	"nju.edu.cn/ds/lab2/cli/utils"
 )
@@ -40,7 +41,7 @@ func New(url string, token string) DistributedFileSystem {
 		url:      url,
 		conn:     nil,
 		fsclient: nil,
-		context:  context.WithValue(context.Background(), "TOKEN", token),
+		context:  metadata.NewContext(context.Background(), metadata.New(map[string]string{"TOKEN": token})),
 	}
 }
 
@@ -73,9 +74,9 @@ func (fs *DistributedFileSystemImpl) List(path string) ([]string, error) {
 	if !utils.ValidatePath(path) {
 		return nil, utils.InvalidPathError(path)
 	}
-	resp, err := fs.fsclient.List(context.Background(), &file.Path{
+	resp, err := fs.fsclient.List(fs.context, &file.Path{
 		Path: path,
-	})
+	}, grpc.FailFast(true))
 	if err = combineErrors(resp, err); err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func (fs *DistributedFileSystemImpl) Mkdir(path string) error {
 	}
 	resp, err := fs.fsclient.CreateDirectory(fs.context, &file.Path{
 		Path: path,
-	})
+	}, grpc.FailFast(true))
 	if err = combineErrors(resp, err); err != nil {
 		return err
 	}
@@ -115,7 +116,7 @@ func (fs *DistributedFileSystemImpl) Move(src, dest string) error {
 		Dest: &file.Path{
 			Path: dest,
 		},
-	})
+	}, grpc.FailFast(true))
 	if err = combineErrors(resp, err); err != nil {
 		return err
 	}
@@ -131,7 +132,7 @@ func (fs *DistributedFileSystemImpl) Remove(path string) error {
 	}
 	resp, err := fs.fsclient.Delete(fs.context, &file.Path{
 		Path: path,
-	})
+	}, grpc.FailFast(true))
 	if err = combineErrors(resp, err); err != nil {
 		return err
 	}
@@ -141,7 +142,7 @@ func (fs *DistributedFileSystemImpl) Remove(path string) error {
 func (fs *DistributedFileSystemImpl) getFileMeta(path string) (*file.File, error) {
 	resp, err := fs.fsclient.GetFileMeta(fs.context, &file.Path{
 		Path: path,
-	})
+	}, grpc.FailFast(true))
 	if err = combineErrors(resp, err); err != nil {
 		return nil, err
 	}
@@ -168,7 +169,7 @@ func (fs *DistributedFileSystemImpl) createFileMeta(local string, remote string)
 		},
 		Size:     localFileInfo.Size(),
 		Checksum: []byte(fileMD5Hash),
-	})
+	}, grpc.FailFast(true))
 	if err = combineErrors(resp, err); err != nil {
 		return nil, err
 	}

@@ -3,17 +3,14 @@ package services.interceptors;
 import com.google.common.annotations.VisibleForTesting;
 
 import com.sun.istack.internal.NotNull;
-import io.grpc.ForwardingServerCall;
-import io.grpc.ForwardingServerCallListener;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -53,11 +50,16 @@ public class FileSystemAuthInterceptor implements ServerInterceptor {
         ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         logger.log(Level.OFF, "header received from client:" + headers);
         String token = headers.get(TokenHeader);
-        RBucket<String> tokenBucket = redissonClient.getBucket("token/" + token);
         ServerCall.Listener<ReqT> delegateListener = next.startCall(call, headers);
-        if (tokenBucket.isExists()) {
-            tokenBucket.expireAsync(5, TimeUnit.MINUTES);
-        } else {
+        boolean tokenValid = false;
+        if (token != null && !token.isEmpty()) {
+            RBucket<String> tokenBucket = redissonClient.getBucket("token/" + token, new StringCodec());
+            if (tokenBucket.isExists() && !tokenBucket.get().isEmpty()) {
+                tokenBucket.expireAsync(5, TimeUnit.MINUTES);
+                tokenValid = true;
+            }
+        }
+        if (!tokenValid) {
             return new SimpleForwardingServerCallListener<ReqT>(delegateListener) {
                 /**
                  * The client completed all message sending. However, the call may still be
@@ -65,7 +67,7 @@ public class FileSystemAuthInterceptor implements ServerInterceptor {
                  */
                 @Override
                 public void onHalfClose() {
-                    Status.UNAUTHENTICATED
+                    throw Status.UNAUTHENTICATED
                         .withDescription("Token invalid or may be expired, please relogin.")
                         .asRuntimeException();
                 }

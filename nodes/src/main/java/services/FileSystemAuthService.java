@@ -4,11 +4,11 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,7 +38,8 @@ public class FileSystemAuthService extends AuthGrpc.AuthImplBase {
     public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         String username = request.getUsername();
         String password = request.getPassword();
-        RBucket<String> passwordBucket = redissonClient.getBucket("user/" + username + "/password");
+        RBucket<String> passwordBucket = redissonClient.getBucket("user/" + username + "/password",
+            new StringCodec());
         String passwordStored = passwordBucket.get();
         if (passwordStored.equals(DigestUtils.md5Hex(password))) {
             RAtomicLong loginTimes =
