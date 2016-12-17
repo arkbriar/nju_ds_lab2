@@ -6,7 +6,6 @@ import (
 	"io"
 	"net"
 	"os"
-
 	"strconv"
 
 	"github.com/heroku/docker-registry-client/Godeps/_workspace/src/github.com/Sirupsen/logrus"
