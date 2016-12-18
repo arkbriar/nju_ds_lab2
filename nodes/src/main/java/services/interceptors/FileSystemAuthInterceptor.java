@@ -2,7 +2,6 @@ package services.interceptors;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import com.sun.istack.internal.NotNull;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
@@ -29,7 +28,7 @@ public class FileSystemAuthInterceptor implements ServerInterceptor {
     static final Metadata.Key<String> TokenHeader =
         Metadata.Key.of("TOKEN", Metadata.ASCII_STRING_MARSHALLER);
 
-    public FileSystemAuthInterceptor(@NotNull RedissonClient redissonClient) {
+    public FileSystemAuthInterceptor(RedissonClient redissonClient) {
         this.redissonClient = redissonClient;
     }
 

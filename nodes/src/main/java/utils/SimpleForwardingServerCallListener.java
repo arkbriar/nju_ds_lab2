@@ -1,6 +1,5 @@
 package utils;
 
-import com.sun.istack.internal.NotNull;
 import io.grpc.ServerCall;
 
 /**
@@ -9,7 +8,7 @@ import io.grpc.ServerCall;
 public abstract class SimpleForwardingServerCallListener<ReqT> extends ServerCall.Listener<ReqT> {
     private ServerCall.Listener<ReqT> delegate;
 
-    public SimpleForwardingServerCallListener(@NotNull ServerCall.Listener<ReqT> delegate) {
+    public SimpleForwardingServerCallListener(ServerCall.Listener<ReqT> delegate) {
         super();
         this.delegate = delegate;
     }

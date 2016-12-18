@@ -14,9 +14,9 @@ fi
 # Build
 
 ```bash
-cd nodes && gradle jar && cd ..
+cd nodes && gradle fatJar && cd ..
 cd cli && make && mv dfscli ../ && cd ..
-mv nodes/build/libs/nodes-1.0-SNAPSHOT.jar nodes.jar
+mv nodes/build/libs/nodes-all-1.0-SNAPSHOT.jar nodes.jar
 ```
 
 # Run
